@@ -1,0 +1,116 @@
+package module3;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class MenuInterfaceApp extends JFrame {
+
+    private JTextArea textArea;
+    private JLabel statusBar;
+
+    public MenuInterfaceApp() {
+
+        // Window setup
+        setTitle("Menu Interface Application");
+        setSize(550, 350);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Text area
+        textArea = new JTextArea();
+        add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        // Status bar
+        statusBar = new JLabel(" Ready");
+        statusBar.setBorder(BorderFactory.createEtchedBorder());
+        add(statusBar, BorderLayout.SOUTH);
+
+        // Menu bar
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("Options");
+
+        JMenuItem dateTimeItem = new JMenuItem("Print Date/Time");
+        JMenuItem saveItem = new JMenuItem("Save to log.txt");
+        JMenuItem colorPickerItem = new JMenuItem("Choose Green Hue");
+        JMenuItem exitItem = new JMenuItem("Exit");
+
+        // Add menu items
+        menu.add(dateTimeItem);
+        menu.add(saveItem);
+        menu.add(colorPickerItem);
+        menu.add(exitItem);
+        menuBar.add(menu);
+
+        setJMenuBar(menuBar);
+
+        // ACTION 1: Print date/time
+        dateTimeItem.addActionListener(e -> {
+            String now = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            textArea.append("Current Date/Time: " + now + "\n");
+            updateStatus("Date/time printed");
+        });
+
+        // ACTION 2: Save text to log.txt
+        saveItem.addActionListener(e -> {
+            try (FileWriter writer = new FileWriter("log.txt")) {
+                writer.write(textArea.getText());
+                updateStatus("Saved to log.txt");
+                JOptionPane.showMessageDialog(this, "Saved to log.txt");
+            } catch (IOException ex) {
+                updateStatus("Error saving file");
+                JOptionPane.showMessageDialog(this, "Error writing file");
+            }
+        });
+
+        // ACTION 3: Color Picker (Green Hue Only)
+        colorPickerItem.addActionListener(e -> {
+
+            // Start with a default green
+            Color initialGreen = new Color(0, 180, 0);
+
+            Color chosen = JColorChooser.showDialog(
+                    this,
+                    "Choose a Green Hue",
+                    initialGreen
+            );
+
+            if (chosen != null) {
+                // Force the color to stay green-ish
+                int green = Math.max(chosen.getGreen(), 120);
+                int red = Math.min(chosen.getRed(), 100);
+                int blue = Math.min(chosen.getBlue(), 100);
+
+                Color finalGreen = new Color(red, green, blue);
+                getContentPane().setBackground(finalGreen);
+
+                colorPickerItem.setText("Green Hue (RGB: " +
+                        red + "," + green + "," + blue + ")");
+
+                updateStatus("Background color changed");
+            }
+        });
+
+        // ACTION 4: Exit
+        exitItem.addActionListener(e -> {
+            updateStatus("Exiting...");
+            System.exit(0);
+        });
+
+        // Make window visible
+        setVisible(true);
+    }
+
+    private void updateStatus(String message) {
+        statusBar.setText(" " + message);
+    }
+
+    public static void main(String[] args) {
+        new MenuInterfaceApp();
+    }
+}
